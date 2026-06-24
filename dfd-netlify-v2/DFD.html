@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento de Formalização de Demanda - DFD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.4;
+            color: #000;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: white;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            border: 1px solid #000;
+        }
+
+        .section-header {
+            background: #f0f0f0;
+            padding: 8px;
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+            font-size: 11pt;
+        }
+
+        .section-content { padding: 10px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        table td, table th { border: 1px solid #000; padding: 6px; vertical-align: top; }
+
+        .field-label { font-weight: bold; background: #f9f9f9; width: 30%; }
+
+        input[type="text"], input[type="email"], input[type="tel"],
+        input[type="date"], input[type="number"], textarea, select {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #999;
+            padding: 4px;
+            font-family: inherit;
+            font-size: 11pt;
+            background: transparent;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            border: 1px solid #999;
+            width: 100%;
+        }
+
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; padding: 5px 0; }
+        .checkbox-item { display: flex; align-items: center; gap: 5px; }
+        input[type="checkbox"] { width: 14px; height: 14px; }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 300px;
+            margin: 40px auto 5px;
+        }
+
+        /* ── Barra de ferramentas IA ── */
+        .no-print {
+            background: #e3f2fd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .btn-pdf {
+            background: #1976d2;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        .btn-pdf:hover { background: #1565c0; }
+
+        /* Botão IA */
+        .btn-ia {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #6c3bff, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 16px;
+            font-size: 10pt;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity .2s;
+        }
+        .btn-ia:hover { opacity: .88; }
+        .btn-ia:disabled { opacity: .5; cursor: not-allowed; }
+
+        .ia-spinner {
+            display: inline-block;
+            width: 13px; height: 13px;
+            border: 2px solid rgba(255,255,255,.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .ia-aviso {
+            font-size: 9pt;
+            color: #555;
+            font-family: Arial, sans-serif;
+            margin-top: 4px;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            .btn-ia { display: none !important; }
+            .ia-aviso { display: none !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            input, textarea, select { border: none !important; border-bottom: 1px solid #ccc !important; }
+            .section { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Barra de ações (não imprime) -->
+<div class="no-print">
+    <button class="btn-pdf" onclick="gerarPDF()">📄 Gerar PDF</button>
+    <p style="margin-top:10px; font-size:10pt; color:#666;">
+        Preencha todos os campos e clique em "Gerar PDF" para salvar o documento
+    </p>
+</div>
+
+<div class="container" id="dfd-documento">
+    <h1>Documento de Formalização de Demanda</h1>
+
+    <!-- ── SEÇÃO 1 ── -->
+    <div class="section">
+        <div class="section-header">1. IDENTIFICAÇÃO DO REQUISITANTE</div>
+        <div class="section-content">
+            <table>
+                <tr>
+                    <td class="field-label">Requisitante:</td>
+                    <td>
+                        <select id="secretaria_cargo" name="secretaria_cargo">
+                            <option value="">Selecione</option>
+                            <option value="Secretário(a) Municipal de Obras, Mobilidade e Serviços Urbanos">Secretário(a) Municipal de Obras, Mobilidade e Serviços Urbanos</option>
+                            <option value="Secretário(a) Municipal de Transporte">Secretário(a) Municipal de Transporte</option>
+                            <option value="Secretário(a) Municipal de Infraestrutura">Secretário(a) Municipal de Infraestrutura</option>
+                            <option value="Secretário(a) Municipal de Serviços Urbanos">Secretário(a) Municipal de Serviços Urbanos</option>
+                            <option value="Secretário(a) Municipal de Obras Públicas">Secretário(a) Municipal de Obras Públicas</option>
+                            <option value="Secretário(a) Municipal de Mobilidade Urbana">Secretário(a) Municipal de Mobilidade Urbana</option>
+                            <option value="Secretário(a) Municipal de Desenvolvimento Urbano">Secretário(a) Municipal de Desenvolvimento Urbano</option>
+                            <option value="Secretário(a) Municipal de Limpeza Urbana">Secretário(a) Municipal de Limpeza Urbana</option>
+                            <option value="Secretário(a) Municipal de Trânsito e Mobilidade">Secretário(a) Municipal de Trânsito e Mobilidade</option>
+                            <option value="Secretário(a) Municipal de Agricultura e Obras">Secretário(a) Municipal de Agricultura e Obras</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="field-label">Responsável pela demanda:</td>
+                    <td>
+                        <select id="servidor" name="servidor">
+                            <option value="">Selecione</option>
+                            <option value="Alexandre Chaves de Almeida">Alexandre Chaves de Almeida</option>
+                            <option value="Flávio de Souza Santos">Flávio de Souza Santos</option>
+                            <option value="Elaine Auxiliadora Peres">Elaine Auxiliadora Peres</option>
+                            <option value="Luciene Abadia Ribeiro Rodrigues">Luciene Abadia Ribeiro Rodrigues</option>
+                            <option value="Camila Auxiliadora Borges Santos">Camila Auxiliadora Borges Santos</option>
+                            <option value="Aguinaldo Antônio Gonçalves">Aguinaldo Antônio Gonçalves</option>
+                            <option value="Denis Alexandre Cruvinel">Denis Alexandre Cruvinel</option>
+                            <option value="Josenice Terezinha de Paiva Marques">Josenice Terezinha de Paiva Marques</option>
+                            <option value="Marcos Borges Pontes">Marcos Borges Pontes</option>
+                            <option value="Emanuelle Carvalho">Emanuelle Carvalho</option>
+                            <option value="Rosana de Fátima Neves de Souza">Rosana de Fátima Neves de Souza</option>
+                            <option value="Gilberto Martins Ribeiro">Gilberto Martins Ribeiro</option>
+                            <option value="Fernanda Rosa de Rezende">Fernanda Rosa de Rezende</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="field-label">Cargo:</td>
+                    <td>
+                        <select id="cargo" name="cargo">
+                            <option value="">Selecione</option>
+                            <option value="Secretaria Municipal de Obras, Mobilidade e Serviços Urbanos">Secretaria Municipal de Obras, Mobilidade e Serviços Urbanos</option>
+                            <option value="Secretaria Municipal de Transporte">Secretaria Municipal de Transporte</option>
+                            <option value="Secretaria Municipal de Infraestrutura">Secretaria Municipal de Infraestrutura</option>
+                            <option value="Secretaria Municipal de Serviços Urbanos">Secretaria Municipal de Serviços Urbanos</option>
+                            <option value="Secretaria Municipal de Obras Públicas">Secretaria Municipal de Obras Públicas</option>
+                            <option value="Secretaria Municipal de Mobilidade Urbana">Secretaria Municipal de Mobilidade Urbana</option>
+                            <option value="Secretaria Municipal de Desenvolvimento Urbano">Secretaria Municipal de Desenvolvimento Urbano</option>
+                            <option value="Secretaria Municipal de Limpeza Urbana">Secretaria Municipal de Limpeza Urbana</option>
+                            <option value="Secretaria Municipal de Trânsito e Mobilidade">Secretaria Municipal de Trânsito e Mobilidade</option>
+                            <option value="Secretaria Municipal de Agricultura e Obras">Secretaria Municipal de Agricultura e Obras</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="field-label">E-mail institucional:</td>
+                    <td>
+                        <select id="email_setor">
+                            <option value="">Selecione</option>
+                            <option>comunicacao@tapira.mg.gov.br</option>
+                            <option>desenvolvimento.social@tapira.mg.gov.br</option>
+                            <option>transporte@tapira.mg.gov.br</option>
+                            <option>controladoria@tapira.mg.gov.br</option>
+                            <option>procuradoria@tapira.mg.gov.br</option>
+                            <option>rh@tapira.mg.gov.br</option>
+                            <option>agricultura@tapira.mg.gov.br</option>
+                            <option>turismo@tapira.mg.gov.br</option>
+                            <option>educacao@tapira.mg.gov.br</option>
+                            <option>esporte@tapira.mg.gov.br</option>
+                            <option>contabilidade@tapira.mg.gov.br</option>
+                            <option>governo@tapira.mg.gov.br</option>
+                            <option>obras@tapira.mg.gov.br</option>
+                            <option>saude@tapira.mg.gov.br</option>
+                            <option>seguranca@tapira.mg.gov.br</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="field-label">Telefone:</td>
+                    <td>
+                        <select id="telefone_setor">
+                            <option value="">Selecione</option>
+                            <option>Controladoria - (34) 3199-2880</option>
+                            <option>Procuradoria - (34) 3199-2880 Ramal 42</option>
+                            <option>RH - (34) 3199-2880 Ramal 41</option>
+                            <option>Agricultura - (34) 3199-2880</option>
+                            <option>Comunicação - (34) 3633-1612 Ramal 36</option>
+                            <option>Turismo - (34) 3199-2880</option>
+                            <option>Desenvolvimento Social - (34) 3199-2881</option>
+                            <option>Educação - (34) 3199-2880</option>
+                            <option>Esporte - (34) 3199-2880</option>
+                            <option>Fazenda - (34) 3199-2880 Ramal 39</option>
+                            <option>Governo - (34) 3199-2880 Ramal 38</option>
+                            <option>Obras - (34) 3199-2880</option>
+                            <option>Saúde - (34) 3199-2885</option>
+                            <option>Segurança - (34) 3356-8721</option>
+                            <option>Transporte - (34) 3199-2880</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 2: OBJETO ── -->
+    <div class="section">
+        <div class="section-header">2. OBJETO DA DEMANDA</div>
+        <div class="section-content">
+            <p class="ia-aviso no-print">✏️ Descreva brevemente o que precisa contratar e clique em <strong>✨ Gerar com IA</strong></p>
+            <textarea id="objeto" rows="6" placeholder="Descreva o objeto da contratação..."></textarea>
+            <div class="no-print">
+                <button class="btn-ia" id="btn-objeto" onclick="gerarTextoIA('objeto')">
+                    ✨ Gerar Objeto com IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 3: JUSTIFICATIVA ── -->
+    <div class="section">
+        <div class="section-header">3. JUSTIFICATIVA DA DEMANDA</div>
+        <div class="section-content">
+            <p class="ia-aviso no-print">💡 A IA usará o objeto preenchido acima para gerar a justificativa técnica</p>
+            <textarea id="justificativa" rows="8" placeholder="Justificativa da contratação..."></textarea>
+            <div class="no-print">
+                <button class="btn-ia" id="btn-justificativa" onclick="gerarTextoIA('justificativa')">
+                    ✨ Gerar Justificativa com IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 4: IDENTIFICAÇÃO E INFORMAÇÕES ── -->
+    <div class="section">
+        <div class="section-header">4. IDENTIFICAÇÃO E INFORMAÇÕES DA DEMANDA</div>
+        <div class="section-content">
+            <table id="tabela-itens">
+                <thead>
+                    <tr>
+                        <th>Nome / Descrição</th>
+                        <th>Tipo</th>
+                        <th>Unidade Medida</th>
+                        <th>Quantidade</th>
+                        <th>Quantidade/Mês</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><textarea rows="3" placeholder="Descrição do item..."></textarea></td>
+                        <td>
+                            <select>
+                                <option value="">Selecione</option>
+                                <option>SERVIÇO</option>
+                                <option>MATERIAL</option>
+                                <option>SERVIÇO/MATERIAL</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select>
+                                <option value="">Selecione</option>
+                                <option>METRO</option>
+                                <option>MÊS</option>
+                                <option>HORA</option>
+                                <option>UNIDADE</option>
+                                <option>KG</option>
+                            </select>
+                        </td>
+                        <td><input type="number" placeholder="0"></td>
+                        <td><input type="number" placeholder="0"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="no-print" type="button" onclick="adicionarLinha()" style="margin-top:10px; padding:6px 14px; cursor:pointer;">+ Adicionar Item</button>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 5: ESTIMATIVA DE VALOR ── -->
+    <div class="section">
+        <div class="section-header">5. ESTIMATIVA DE QUANTIDADES E VALOR</div>
+        <div class="section-content">
+            <table id="tabela-valores">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Descrição</th>
+                        <th>Unidade</th>
+                        <th>Quantidade</th>
+                        <th>Valor Unitário (R$)</th>
+                        <th>Valor Total (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><input type="text"></td>
+                        <td><input type="text" style="width:80px"></td>
+                        <td><input type="number" onchange="calcularTotal(this)" style="width:80px"></td>
+                        <td><input type="number" step="0.01" onchange="calcularTotal(this)" style="width:100px"></td>
+                        <td><input type="text" readonly style="width:120px; background:#f5f5f5"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="no-print" type="button" onclick="adicionarItemValor()" style="margin-top:10px; padding:6px 14px; cursor:pointer;">+ Adicionar Item</button>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 6: ORÇAMENTÁRIA ── -->
+    <div class="section">
+        <div class="section-header">6. INDICAÇÃO DE ADEQUAÇÃO ORÇAMENTÁRIA</div>
+        <div class="section-content">
+            <table>
+                <tr>
+                    <th>Unidade Orçamentária</th>
+                    <th>Ficha</th>
+                    <th>Classificação Orçamentária</th>
+                    <th>Fontes de Recursos</th>
+                </tr>
+                <tr>
+                    <td><input type="text" placeholder="Secretaria Municipal de..."></td>
+                    <td><input type="text" style="width:60px" placeholder="XXX"></td>
+                    <td><input type="text" placeholder="XXXXXXXXXXX"></td>
+                    <td><input type="text" placeholder="XXXXXXXX"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 7: DATA ── -->
+    <div class="section">
+        <div class="section-header">7. DATA PRETENDIDA PARA A CONCLUSÃO DA CONTRATAÇÃO</div>
+        <div class="section-content">
+            <p>A presente contratação deverá ser formalizada até
+                <input type="date" id="data-conclusao" style="width:150px; display:inline-block">.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 8: VINCULAÇÃO ── -->
+    <div class="section">
+        <div class="section-header">8. VINCULAÇÃO OU DEPENDÊNCIA COM OUTRA CONTRATAÇÃO</div>
+        <div class="section-content">
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="vinculacao" value="nao"> Não há vinculação ou dependência desta contratação em relação a outra
+                </label>
+            </div>
+            <div style="margin-top:10px;">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="vinculacao" value="sim"> Há vinculação ou dependência desta contratação em relação a seguinte:
+                </label>
+                <input type="text" placeholder="Informe o número do processo/contrato" style="margin-top:5px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 9: PRIORIDADE ── -->
+    <div class="section">
+        <div class="section-header">9. PRIORIDADE DA CONTRATAÇÃO</div>
+        <div class="section-content">
+            <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" name="prioridade" value="alta"> Alta</label>
+                <label class="checkbox-item"><input type="checkbox" name="prioridade" value="media"> Média</label>
+                <label class="checkbox-item"><input type="checkbox" name="prioridade" value="baixa"> Baixa</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 10: REGIME DE EXECUÇÃO ── -->
+    <div class="section">
+        <div class="section-header">10. REGIME DE EXECUÇÃO</div>
+        <div class="section-content">
+            <div class="checkbox-group" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <label class="checkbox-item"><input type="checkbox"> Empreitada por preço unitário</label>
+                <label class="checkbox-item"><input type="checkbox"> Empreitada por preço global</label>
+                <label class="checkbox-item"><input type="checkbox"> Empreitada integral</label>
+                <label class="checkbox-item"><input type="checkbox"> Fornecimento e prestação de serviço associado</label>
+                <label class="checkbox-item"><input type="checkbox"> Contratação por tarefa</label>
+                <label class="checkbox-item"><input type="checkbox"> Contratação integrada</label>
+                <label class="checkbox-item"><input type="checkbox"> Contratação semi-integrada</label>
+                <label class="checkbox-item"><input type="checkbox"> Outros</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 11 ── -->
+    <div class="section">
+        <div class="section-header">11. FORNECIMENTO DE MATERIAIS</div>
+        <div class="section-content">
+            <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" name="materiais" value="sim"> SIM</label>
+                <label class="checkbox-item"><input type="checkbox" name="materiais" value="nao"> NÃO</label>
+            </div>
+            <div style="margin-top:10px;">
+                <label class="checkbox-item"><input type="checkbox"> CONSUMO</label>
+                <label class="checkbox-item"><input type="checkbox"> PERMANENTE</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 12 ── -->
+    <div class="section">
+        <div class="section-header">12. REGIME DO FORNECIMENTO DE MATERIAL</div>
+        <div class="section-content">
+            <div class="checkbox-group" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <label class="checkbox-item"><input type="checkbox"> Parcela única</label>
+                <label class="checkbox-item"><input type="checkbox"> Mensal</label>
+                <label class="checkbox-item"><input type="checkbox"> Semanal</label>
+                <label class="checkbox-item"><input type="checkbox"> Quinzenal</label>
+                <label class="checkbox-item"><input type="checkbox"> Conforme a demanda</label>
+                <label class="checkbox-item"><input type="checkbox"> Outro: <input type="text" style="width:120px; display:inline-block"></label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 13 ── -->
+    <div class="section">
+        <div class="section-header">13. PRESTAÇÃO DE SERVIÇO</div>
+        <div class="section-content">
+            <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" name="servico" value="sim"> SIM</label>
+                <label class="checkbox-item"><input type="checkbox" name="servico" value="nao"> NÃO</label>
+            </div>
+            <div style="margin-top:10px;">
+                <label class="checkbox-item"><input type="checkbox"> EVENTUAL</label>
+                <label class="checkbox-item"><input type="checkbox"> PERMANENTE</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 14 ── -->
+    <div class="section">
+        <div class="section-header">14. DEFINIÇÃO DA PRESTAÇÃO DE SERVIÇO</div>
+        <div class="section-content">
+            <div class="checkbox-group" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <label class="checkbox-item"><input type="checkbox"> Não continuado</label>
+                <label class="checkbox-item"><input type="checkbox"> Continuado</label>
+                <label class="checkbox-item"><input type="checkbox"> Conforme a demanda</label>
+                <label class="checkbox-item"><input type="checkbox"> Semanal</label>
+                <label class="checkbox-item"><input type="checkbox"> Parcela única</label>
+                <label class="checkbox-item"><input type="checkbox"> Quinzenal</label>
+                <label class="checkbox-item"><input type="checkbox"> Mensal</label>
+                <label class="checkbox-item"><input type="checkbox"> Outro: <input type="text" style="width:120px; display:inline-block"></label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 15: ESTUDOS TÉCNICOS ── -->
+    <div class="section">
+        <div class="section-header">15. DEFINIÇÃO DA NECESSIDADE DE ELABORAÇÃO OU NÃO DE ESTUDOS TÉCNICOS PRELIMINARES</div>
+        <div class="section-content">
+            <div style="margin-bottom:10px;">
+                <label class="checkbox-item" style="align-items:flex-start;">
+                    <input type="checkbox" style="margin-top:3px;">
+                    <span>Com base na baixa complexidade do objeto e no baixo valor estimado da contratação, o Estudo preliminar e o gerenciamento de riscos da contratação serão dispensados para esta contratação, bastando a elaboração de TR ou PB, se for o caso.</span>
+                </label>
+            </div>
+            <div style="margin-bottom:10px;">
+                <label class="checkbox-item" style="align-items:flex-start;">
+                    <input type="checkbox" style="margin-top:3px;">
+                    <span>Devido à média/alta complexidade do objeto e/ou o valor estimado significativo, serão necessários elaboração do Estudo Técnico Preliminar e do documento materializador do gerenciamento de riscos da contratação (mapa de riscos/análise de riscos).</span>
+                </label>
+            </div>
+            <div>
+                <label class="checkbox-item" style="align-items:flex-start;">
+                    <input type="checkbox" style="margin-top:3px;">
+                    <span>Devido à existência de Estudo Técnico Preliminar e de gerenciamento de riscos de contratação anterior, serão utilizados o ETP e mapa de riscos/análise de riscos do Processo Licitatório nº
+                        <input type="text" style="width:100px; display:inline-block">/<input type="text" style="width:60px; display:inline-block">.
+                    </span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 16: ALINHAMENTO ── -->
+    <div class="section">
+        <div class="section-header">16. ALINHAMENTO DA CONTRATAÇÃO NO PLANEJAMENTO DA ADMINISTRAÇÃO</div>
+        <div class="section-content">
+            <textarea id="alinhamento" rows="5">A contratação em análise encontra-se alinhada aos instrumentos de planejamento orçamentário da Administração. Porém, dada a ausência de Plano de Contratações Anual (PCA) na Prefeitura de Tapira-MG, o qual se encontra em fase de elaboração, a contratação ainda não consta de instrumento de planejamento de contratações formalizado.</textarea>
+            <div class="no-print">
+                <button class="btn-ia" id="btn-alinhamento" onclick="gerarTextoIA('alinhamento')">
+                    ✨ Personalizar com IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 17: FISCALIZAÇÃO ── -->
+    <div class="section">
+        <div class="section-header">17. RESPONSABILIDADE PELA GESTÃO E FISCALIZAÇÃO DA CONTRATAÇÃO</div>
+        <div class="section-content">
+            <textarea id="fiscalizacao" rows="5" placeholder="Texto sobre responsabilidade pela gestão e fiscalização..."></textarea>
+            <div class="no-print">
+                <button class="btn-ia" id="btn-fiscalizacao" onclick="gerarTextoIA('fiscalizacao')">
+                    ✨ Gerar com IA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 18: VALOR ── -->
+    <div class="section">
+        <div class="section-header">18. ESTIMATIVA DO VALOR DA CONTRATAÇÃO</div>
+        <div class="section-content">
+            <p>Informamos que o valor total estimado para a presente contratação é de
+                <strong>R$ <input type="number" step="0.01" id="valor-total" placeholder="00.000,00" style="width:150px; display:inline-block; font-weight:bold">
+                (<input type="text" id="valor-extenso" placeholder="valor por extenso" style="width:300px; display:inline-block">)</strong>,
+                cujos quantitativos foram estimados de acordo com a atual demanda da
+                <select id="secretaria_valor">
+                    <option value="">Selecione</option>
+                    <option value="Secretaria Municipal de Obras, Mobilidade e Serviços Urbanos">Secretaria Municipal de Obras, Mobilidade e Serviços Urbanos</option>
+                    <option value="Secretaria Municipal de Transporte">Secretaria Municipal de Transporte</option>
+                    <option value="Secretaria Municipal de Infraestrutura">Secretaria Municipal de Infraestrutura</option>
+                    <option value="Secretaria Municipal de Serviços Urbanos">Secretaria Municipal de Serviços Urbanos</option>
+                    <option value="Secretaria Municipal de Obras Públicas">Secretaria Municipal de Obras Públicas</option>
+                    <option value="Secretaria Municipal de Mobilidade Urbana">Secretaria Municipal de Mobilidade Urbana</option>
+                    <option value="Secretaria Municipal de Desenvolvimento Urbano">Secretaria Municipal de Desenvolvimento Urbano</option>
+                    <option value="Secretaria Municipal de Limpeza Urbana">Secretaria Municipal de Limpeza Urbana</option>
+                    <option value="Secretaria Municipal de Trânsito e Mobilidade">Secretaria Municipal de Trânsito e Mobilidade</option>
+                    <option value="Secretaria Municipal de Agricultura e Obras">Secretaria Municipal de Agricultura e Obras</option>
+                </select>.
+            </p>
+        </div>
+    </div>
+
+    <!-- ── SEÇÃO 19: ASSINATURAS ── -->
+    <div class="section">
+        <div class="section-header">19. RESPONSABILIDADE PELA FORMALIZAÇÃO DA DEMANDA</div>
+        <div class="section-content">
+            <p style="margin-bottom:30px;">Considerando a pertinência da demanda, <strong>AUTORIZO</strong> a continuidade do procedimento destinado à contratação em tela.</p>
+
+            <!-- Assinatura Fiscal -->
+            <div style="margin-top:40px; text-align:center;">
+                <div class="signature-line"></div>
+                <p style="text-align:center; font-weight:bold;">
+                    <input type="text" id="nome-fiscal" placeholder="NOME DO FISCAL" style="text-align:center; font-weight:bold;">
+                </p>
+                <p style="text-align:center;">
+                    <input type="text" id="cargo-fiscal" placeholder="Cargo do Fiscal" style="text-align:center;">
+                </p>
+            </div>
+
+            <!-- Assinatura Secretário -->
+            <div style="margin-top:50px; text-align:center;">
+                <div class="signature-line"></div>
+                <p style="text-align:center; font-weight:bold;">
+                    <select id="servidor_assinatura" style="text-align:center;">
+                        <option value="">Selecione o Secretário</option>
+                        <option>Alexandre Chaves de Almeida</option>
+                        <option>Flávio de Souza Santos</option>
+                        <option>Elaine Auxiliadora Peres</option>
+                        <option>Luciene Abadia Ribeiro Rodrigues</option>
+                        <option>Camila Auxiliadora Borges Santos</option>
+                        <option>Aguinaldo Antônio Gonçalves</option>
+                        <option>Denis Alexandre Cruvinel</option>
+                        <option>Josenice Terezinha de Paiva Marques</option>
+                        <option>Marcos Borges Pontes</option>
+                        <option>Emanuelle Carvalho</option>
+                        <option>Rosana de Fátima Neves de Souza</option>
+                        <option>Gilberto Martins Ribeiro</option>
+                        <option>Fernanda Rosa de Rezende</option>
+                    </select>
+                </p>
+                <p style="text-align:center;">
+                    <select id="cargo_assinatura" style="text-align:center;">
+                        <option value="">Selecione o Cargo</option>
+                        <option>Secretário(a) Municipal de Obras, Mobilidade e Serviços Urbanos</option>
+                        <option>Secretário(a) Municipal de Transporte</option>
+                        <option>Secretário(a) Municipal de Infraestrutura</option>
+                        <option>Secretário(a) Municipal de Serviços Urbanos</option>
+                        <option>Secretário(a) Municipal de Obras Públicas</option>
+                        <option>Secretário(a) Municipal de Mobilidade Urbana</option>
+                        <option>Secretário(a) Municipal de Desenvolvimento Urbano</option>
+                        <option>Secretário(a) Municipal de Limpeza Urbana</option>
+                        <option>Secretário(a) Municipal de Trânsito e Mobilidade</option>
+                        <option>Secretário(a) Municipal de Agricultura e Obras</option>
+                    </select>
+                </p>
+                <p style="margin-top:20px;">
+                    Tapira - MG, <input type="date" id="data-assinatura" style="width:150px; display:inline-block">
+                </p>
+            </div>
+        </div>
+    </div>
+</div><!-- /container -->
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+
+// ════════════════════════════════════════════
+// INTEGRAÇÃO COM IA via Netlify Function
+// ════════════════════════════════════════════
+async function gerarTextoIA(tipo) {
+    const objeto     = document.getElementById('objeto')?.value?.trim() || '';
+    const secretaria = document.getElementById('secretaria_cargo')?.value || '';
+    const servidor   = document.getElementById('servidor')?.value || '';
+    const cargo      = document.getElementById('cargo')?.value || '';
+
+    // Validações mínimas
+    if (tipo === 'objeto' && objeto === '') {
+        alert('Descreva brevemente o objeto antes de gerar com IA.');
+        return;
+    }
+    if (tipo !== 'objeto' && objeto === '') {
+        alert('Preencha o campo "Objeto da Demanda" primeiro.');
+        return;
+    }
+    if (!secretaria) {
+        alert('Selecione a Secretaria Requisitante (Seção 1).');
+        return;
+    }
+
+    const btn = document.getElementById('btn-' + tipo);
+    const txtOriginal = btn.innerHTML;
+    btn.innerHTML = '<span class="ia-spinner"></span> Gerando...';
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch('/.netlify/functions/gerar-texto', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo, objeto, secretaria, servidor, cargo })
+        });
+
+        // Lê texto bruto para evitar erro de JSON vazio
+        const rawText = await resp.text();
+        let data;
+        try {
+            data = JSON.parse(rawText);
+        } catch (e) {
+            alert('Erro: resposta inesperada do servidor.\n\nDetalhes: ' + rawText.substring(0, 300));
+            return;
+        }
+
+        if (!resp.ok || data.error) {
+            alert('Erro da IA: ' + (data.error || 'Tente novamente.'));
+            return;
+        }
+
+        // Mapeia tipo → id do textarea
+        const alvos = {
+            objeto:        'objeto',
+            justificativa: 'justificativa',
+            alinhamento:   'alinhamento',
+            fiscalizacao:  'fiscalizacao'
+        };
+        document.getElementById(alvos[tipo]).value = data.texto;
+
+    } catch (err) {
+        alert('Erro de conexão com a Function.\n\nPossíveis causas:\n• GEMINI_API_KEY não configurada no Netlify\n• Function não deployada\n\nDetalhes: ' + err.message);
+    } finally {
+        btn.innerHTML = txtOriginal;
+        btn.disabled = false;
+    }
+}
+
+// ════════════════════════════════════════════
+// TABELAS
+// ════════════════════════════════════════════
+function adicionarLinha() {
+    const tbody = document.querySelector('#tabela-itens tbody');
+    const novaLinha = tbody.rows[0].cloneNode(true);
+    novaLinha.querySelectorAll('input, textarea, select').forEach(el => el.value = '');
+    tbody.appendChild(novaLinha);
+}
+
+function adicionarItemValor() {
+    const tbody = document.getElementById('tabela-valores').querySelector('tbody');
+    const num = tbody.rows.length + 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>${num}</td>
+        <td><input type="text"></td>
+        <td><input type="text" style="width:80px"></td>
+        <td><input type="number" onchange="calcularTotal(this)" style="width:80px"></td>
+        <td><input type="number" step="0.01" onchange="calcularTotal(this)" style="width:100px"></td>
+        <td><input type="text" readonly style="width:120px; background:#f5f5f5"></td>
+    `;
+    tbody.appendChild(tr);
+}
+
+function calcularTotal(input) {
+    const linha = input.closest('tr');
+    const qtd  = parseFloat(linha.cells[3].querySelector('input').value) || 0;
+    const unit = parseFloat(linha.cells[4].querySelector('input').value) || 0;
+    linha.cells[5].querySelector('input').value =
+        (qtd * unit).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    atualizarValorTotal();
+}
+
+function atualizarValorTotal() {
+    let total = 0;
+    document.querySelectorAll('#tabela-valores tbody tr').forEach(linha => {
+        const val = linha.cells[5].querySelector('input').value;
+        if (val) total += parseFloat(val.replace(/\./g, '').replace(',', '.'));
+    });
+    document.getElementById('valor-total').value =
+        total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// ════════════════════════════════════════════
+// CHECKBOXES EXCLUSIVOS
+// ════════════════════════════════════════════
+['vinculacao', 'prioridade', 'materiais', 'servico'].forEach(nome => {
+    document.querySelectorAll(`input[type="checkbox"][name="${nome}"]`).forEach(cb => {
+        cb.addEventListener('change', function () {
+            document.querySelectorAll(`input[type="checkbox"][name="${nome}"]`).forEach(o => {
+                if (o !== this) o.checked = false;
+            });
+        });
+    });
+});
+
+// ════════════════════════════════════════════
+// GERAR PDF
+// ════════════════════════════════════════════
+function gerarPDF() {
+    const el  = document.getElementById('dfd-documento');
+    const opt = {
+        margin: [10, 10, 10, 10],
+        filename: 'DFD-' + new Date().toISOString().split('T')[0] + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const btn = document.querySelector('.btn-pdf');
+    const txt = btn.innerHTML;
+    btn.innerHTML = '⏳ Gerando...';
+    btn.disabled = true;
+
+    html2pdf().set(opt).from(el).save().then(() => {
+        btn.innerHTML = txt;
+        btn.disabled = false;
+    });
+}
+</script>
+</body>
+</html>
